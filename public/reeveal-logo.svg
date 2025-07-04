@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Main pill shape with gradient -->
+  <defs>
+    <linearGradient id="pillGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34A853;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22C55E;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="topGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F5E8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F0F9FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Speed lines -->
+  <rect x="10" y="25" width="25" height="4" rx="2" fill="#2D5B3F" opacity="0.6"/>
+  <rect x="15" y="35" width="20" height="4" rx="2" fill="#2D5B3F" opacity="0.4"/>
+  <rect x="12" y="45" width="22" height="4" rx="2" fill="#2D5B3F" opacity="0.5"/>
+  <rect x="18" y="55" width="18" height="4" rx="2" fill="#2D5B3F" opacity="0.3"/>
+  
+  <!-- Main pill shape (bottom part) -->
+  <path d="M35 40 L75 40 C85 40 95 50 95 60 L95 70 C95 80 85 90 75 90 L45 90 C35 90 25 80 25 70 L25 50 C25 45 30 40 35 40 Z" 
+        fill="url(#pillGradient)" 
+        stroke="#2D5B3F" 
+        stroke-width="3"/>
+  
+  <!-- Top part of pill -->
+  <path d="M30 25 L70 25 C80 25 90 35 90 45 L90 55 C90 65 80 75 70 75 L40 75 C30 75 20 65 20 55 L20 35 C20 30 25 25 30 25 Z" 
+        fill="url(#topGradient)" 
+        stroke="#2D5B3F" 
+        stroke-width="3"/>
+  
+  <!-- Highlight on top part -->
+  <ellipse cx="35" cy="40" rx="4" ry="3" fill="white" opacity="0.8"/>
+  <path d="M30 50 Q35 58 40 50" stroke="white" stroke-width="2" fill="none" opacity="0.6"/>
+</svg>
