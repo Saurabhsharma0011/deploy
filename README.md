@@ -249,4 +249,5 @@ you supabase anon link = **************************
  #   c h e c k  
  #   u i - u p d a t e d  
  #   u i - u p d a t e d  
+ #   d e p l o y  
  
