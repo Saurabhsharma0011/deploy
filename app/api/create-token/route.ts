@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { DatabaseService } from '@/lib/database';
 
 export async function POST(request: Request) {
   try {
@@ -53,6 +54,30 @@ export async function POST(request: Request) {
     // If successful, return the transaction data
     if (response.ok) {
       const data = await response.arrayBuffer();
+      
+      // Save token to database after successful transaction creation
+      try {
+        await DatabaseService.createToken({
+          mint_address: body.mint,
+          name: body.tokenMetadata.name,
+          symbol: body.tokenMetadata.symbol,
+          description: body.tokenMetadata.description || '',
+          image_url: body.tokenMetadata.image || '',
+          metadata_uri: body.tokenMetadata.uri,
+          creator_address: body.publicKey,
+          initial_supply: body.amount || 1,
+          website: body.tokenMetadata.website || '',
+          twitter: body.tokenMetadata.twitter || '',
+          telegram: body.tokenMetadata.telegram || '',
+          discord: body.tokenMetadata.discord || ''
+        });
+        
+        console.log('✅ Token saved to database successfully');
+      } catch (dbError) {
+        console.error('❌ Failed to save token to database:', dbError);
+        // Continue anyway since the token creation was successful
+      }
+      
       return new NextResponse(data, {
         status: 200,
         headers: {

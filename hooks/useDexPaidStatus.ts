@@ -7,13 +7,19 @@ interface DexPaidStatus {
   isLoading: boolean
 }
 
-export const useDexPaidStatus = (mint: string, category?: string): DexPaidStatus => {
+export const useDexPaidStatus = (mint: string, marketCapValue?: number): DexPaidStatus => {
   const [isPaid, setIsPaid] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     const fetchStatus = async () => {
-      if (category !== "bonding" || !mint) {
+      if (!mint) {
+        setIsPaid(false)
+        return
+      }
+
+      // Only check DEX paid status for tokens with market cap >= 10k (trending tokens)
+      if (!marketCapValue || marketCapValue < 10000) {
         setIsPaid(false)
         return
       }
@@ -23,6 +29,14 @@ export const useDexPaidStatus = (mint: string, category?: string): DexPaidStatus
         const response = await fetch(`/api/proxy/dexscreener/${mint}`)
         if (response.ok) {
           const data = await response.json()
+          
+          // Handle the not_found case from our API route
+          if (data.status === "not_found") {
+            setIsPaid(false)
+            return
+          }
+          
+          // Check if we have a valid array response with approved status
           if (Array.isArray(data) && data.length > 0 && data[0].status === "approved") {
             setIsPaid(true)
           } else {
@@ -40,7 +54,7 @@ export const useDexPaidStatus = (mint: string, category?: string): DexPaidStatus
     }
 
     fetchStatus()
-  }, [mint, category])
+  }, [mint, marketCapValue])
 
   return { isPaid, isLoading }
 }

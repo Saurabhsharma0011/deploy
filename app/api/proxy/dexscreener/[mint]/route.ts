@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
-export async function GET(request: Request, { params }: { params: { mint: string } }) {
-  const { mint } = params
+export async function GET(request: Request, { params }: { params: Promise<{ mint: string }> }) {
+  const { mint } = await params
 
   if (!mint) {
     return NextResponse.json({ error: "Mint address is required" }, { status: 400 })

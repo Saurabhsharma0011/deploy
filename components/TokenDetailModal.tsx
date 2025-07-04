@@ -8,8 +8,7 @@ import { TokenTrade } from "@/components/TokenTrade"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PriceDisplay } from "@/components/PriceDisplay"
 import { SocialLinks } from "@/components/SocialLinks"
-import { CandlestickChart } from "@/components/CandlestickChart"
-import { useCandlestickData } from "@/hooks/useCandlestickData"
+import { ChartIframe } from "@/components/ChartIframe"
 import { TokenData } from "@/hooks/useWebSocket"
 import { Clock, TrendingUp, BarChart3, Activity, X, Calendar, Users } from "lucide-react"
 
@@ -29,14 +28,8 @@ export const TokenDetailModal = ({
   onClose 
 }: TokenDetailModalProps) => {
   const [activeTab, setActiveTab] = useState<"trade" | "details">("trade")
-  const [chartTimeframe, setChartTimeframe] = useState<"1H" | "1D" | "1W" | "1M">("1H")
   
-  // Get chart data for the token
-  const chartTimeBucket = chartTimeframe === "1H" ? "1m" : chartTimeframe === "1D" ? "5m" : chartTimeframe === "1W" ? "1h" : "1d"
-  const { data: chartData, isLoading: isChartLoading, refetch: refetchChart } = useCandlestickData(
-    token?.bondingCurveKey, 
-    chartTimeBucket
-  )
+  // Simple chart using iframe - no complex data fetching needed
 
   if (!token) return null
 
@@ -64,7 +57,7 @@ export const TokenDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-transparent border-2 border-primary shadow-xl shadow-primary/40 backdrop-blur-md text-foreground max-w-5xl max-h-[95vh] overflow-hidden animate-in fade-in-0 zoom-in-95 duration-300">
+      <DialogContent className="bg-transparent border-2 border-primary shadow-xl shadow-primary/40 backdrop-blur-md text-foreground max-w-5xl max-h-[95vh] overflow-y-auto animate-in fade-in-0 zoom-in-95 duration-300">
         
         {/* Header */}
         <div className="flex items-start justify-between p-6 border-b border-primary/30">
@@ -129,42 +122,14 @@ export const TokenDetailModal = ({
               <BarChart3 className="w-5 h-5 text-primary" />
               {token.symbol}/SOL Price Chart
             </h3>
-            <div className="flex gap-2">
-              {["1H", "1D", "1W", "1M"].map((timeframe) => (
-                <Button
-                  key={timeframe}
-                  variant={chartTimeframe === timeframe ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setChartTimeframe(timeframe as any)}
-                  className={`h-8 px-3 text-xs ${
-                    chartTimeframe === timeframe 
-                      ? "bg-primary text-primary-foreground" 
-                      : "bg-transparent border-primary/30 hover:bg-primary/10"
-                  }`}
-                >
-                  {timeframe}
-                </Button>
-              ))}
-            </div>
           </div>
           
-          {/* Real Chart */}
-          {token.bondingCurveKey ? (
-            <CandlestickChart
-              data={chartData}
-              isLoading={isChartLoading}
-              onRefresh={refetchChart}
-              tokenSymbol={token.symbol}
-            />
-          ) : (
-            <div className="bg-primary/5 border border-primary/30 rounded-xl p-8 text-center">
-              <BarChart3 className="w-16 h-16 text-primary/30 mx-auto mb-4" />
-              <p className="text-muted-foreground">No chart data available for this token</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Current Price: {isLoadingPrice ? "Loading..." : `$${Number(priceData?.price || 0).toFixed(6)}`}
-              </p>
-            </div>
-          )}
+          {/* Chart Iframe */}
+          <ChartIframe 
+            tokenMint={token.mint}
+            tokenSymbol={token.symbol}
+            className="h-96"
+          />
         </div>
 
         {/* Tab Navigation */}

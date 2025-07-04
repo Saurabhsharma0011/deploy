@@ -83,15 +83,11 @@ export const useWebSocket = () => {
     const graduatedTokensList: TokenData[] = []
     
     // Create trending tokens list sorted by market cap (highest first)
-    // Include tokens with market cap > 0 OR tokens that are newly created with price data
+    // Only include tokens with market cap >= 10k
     let trendingTokensList = [...tokens]
       .filter(token => {
-        // Include tokens with explicit market cap value
-        if (token.market_cap_value && token.market_cap_value > 0) {
-          return true
-        }
-        // Include newly created tokens with price data (calculate estimated market cap)
-        if (token.price && token.created_timestamp > Date.now() - 24 * 60 * 60 * 1000) { // Last 24 hours
+        // Only include tokens with market cap >= 10k
+        if (token.market_cap_value && token.market_cap_value >= 10000) {
           return true
         }
         return false
@@ -114,25 +110,6 @@ export const useWebSocket = () => {
         }
       })
       .sort((a, b) => (b.market_cap_value || 0) - (a.market_cap_value || 0))
-
-    // If we don't have enough trending tokens with market cap data, 
-    // add recently created tokens sorted by creation time
-    if (trendingTokensList.length < 10) {
-      const recentTokens = tokens
-        .filter(token => {
-          // Don't include tokens already in trending list
-          return !trendingTokensList.some(t => t.mint === token.mint) &&
-                 token.created_timestamp > Date.now() - 24 * 60 * 60 * 1000
-        })
-        .sort((a, b) => b.created_timestamp - a.created_timestamp)
-        .slice(0, 20 - trendingTokensList.length)
-        .map(token => ({
-          ...token,
-          market_cap_value: token.market_cap_value || 0
-        }))
-
-      trendingTokensList = [...trendingTokensList, ...recentTokens]
-    }
 
     // Limit to top 50 tokens
     trendingTokensList = trendingTokensList.slice(0, 50)

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, Plus, Info, Clock, RefreshCw, BarChart3 } from "lucide-react"
+import { Wallet, Plus, Info, Clock, RefreshCw, BarChart3, Twitter, MessageCircle } from "lucide-react"
 import { useTokenData } from "./hooks/useTokenData"
 import { type TokenData } from "./hooks/useWebSocket"
 import { ConnectionStatus } from "./components/ConnectionStatus"
@@ -13,8 +13,8 @@ import { SocialLinks } from "./components/SocialLinks"
 import { PriceDisplay } from "./components/PriceDisplay"
 import { TokenTrade } from "./components/TokenTrade"
 import { TokenDetailModal } from "./components/TokenDetailModal"
-import { BondingCurveDebug } from "./components/BondingCurveDebug"
 import { TokenCreateModal } from "./components/TokenCreateModal"
+import { TrendingMarquee } from "./components/TrendingMarquee"
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Progress } from "@/components/ui/progress"
 import { useDexPaidStatus } from "./hooks/useDexPaidStatus"
@@ -30,9 +30,14 @@ const TokenCard = ({
   isLoadingPrice: boolean
   onOpenDetail: (token: TokenData) => void
 }) => {
-  const { isPaid: isDexPaid } = useDexPaidStatus(token.mint, token.category)
+  const { isPaid: isDexPaid } = useDexPaidStatus(token.mint, token.market_cap_value)
 
   const timeAgo = () => {
+    // Use a stable timestamp to avoid hydration mismatch
+    if (typeof window === 'undefined') {
+      return "Just now" // Server-side fallback
+    }
+    
     const now = Date.now()
     const diff = now - token.created_timestamp
     const minutes = Math.floor(diff / 60000)
@@ -78,12 +83,6 @@ const TokenCard = ({
     return `$${liquidity.toFixed(0)}`
   }
 
-  const getBondingCurveProgress = () => {
-    const currentMcap = priceData?.marketCap || token.market_cap_value || 0
-    const targetMcap = 50000 // $50K target
-    const progress = Math.min((currentMcap / targetMcap) * 100, 100)
-    return progress
-  }
 
   return (
     <Card className="bg-transparent border-2 border-primary shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/50 transition-all duration-300 hover:scale-[1.02] rounded-2xl overflow-hidden h-full backdrop-blur-sm">
@@ -123,7 +122,7 @@ const TokenCard = ({
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Just now</span>
+            <span className="text-sm text-muted-foreground">{timeAgo()}</span>
           </div>
         </div>
 
@@ -162,21 +161,6 @@ const TokenCard = ({
           </div>
         </div>
 
-        {/* Bonding Curve */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Bonding Curve</p>
-            <p className="text-sm font-semibold text-accent">
-              {getBondingCurveProgress().toFixed(2)}%
-            </p>
-          </div>
-          <div className="w-full bg-secondary rounded-full h-2">
-            <div 
-              className="bg-accent h-2 rounded-full transition-all duration-500"
-              style={{ width: `${getBondingCurveProgress()}%` }}
-            />
-          </div>
-        </div>
 
         {/* Creator Info */}
         <div className="space-y-1">
@@ -338,6 +322,24 @@ export default function TokenPlatform() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Social Media Links */}
+            <a 
+              href="https://x.com/reevealdotfun" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
+            >
+              <Twitter className="w-5 h-5" />
+            </a>
+            <a 
+              href="https://t.me/reevealdotfun" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </a>
+            
             <Button
               onClick={refetchPrices}
               variant="outline"
@@ -401,6 +403,12 @@ export default function TokenPlatform() {
         </div>
       </div>
 
+      {/* Trending Marquee */}
+      <TrendingMarquee 
+        tokens={trendingTokens.slice(0, 10)} 
+        priceData={priceData}
+      />
+
       {/* Main Content */}
       <div className="w-full px-6 py-8">
         {/* Debug Info for Trending Tokens */}
@@ -412,7 +420,7 @@ export default function TokenPlatform() {
               <p>Trending tokens: {trendingTokens.length}</p>
               <p>Tokens with market cap: {allTokens.filter(t => t.market_cap_value && t.market_cap_value > 0).length}</p>
               <p>Tokens with price data: {allTokens.filter(t => t.price).length}</p>
-              <p>Recent tokens (24h): {allTokens.filter(t => t.created_timestamp > Date.now() - 24 * 60 * 60 * 1000).length}</p>
+              <p>Recent tokens (24h): {typeof window !== 'undefined' ? allTokens.filter(t => t.created_timestamp > Date.now() - 24 * 60 * 60 * 1000).length : 0}</p>
               {trendingTokens.length > 0 && (
                 <div className="mt-2">
                   <p className="font-semibold">Top 3 trending:</p>
@@ -427,12 +435,6 @@ export default function TokenPlatform() {
           </div>
         )}
 
-        {/* Bonding Curve Debug Panel */}
-        <BondingCurveDebug 
-          tokens={allTokens}
-          rawMessages={rawMessages}
-          onRefresh={refetchPrices}
-        />
 
         {/* Tab Headers */}
         <div className="flex gap-8 mb-8">
