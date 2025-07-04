@@ -10,7 +10,7 @@ import { PriceDisplay } from "@/components/PriceDisplay"
 import { SocialLinks } from "@/components/SocialLinks"
 import { ChartIframe } from "@/components/ChartIframe"
 import { TokenData } from "@/hooks/useWebSocket"
-import { Clock, TrendingUp, BarChart3, Activity, X, Calendar, Users } from "lucide-react"
+import { Clock, TrendingUp, BarChart3, Activity, X, Calendar, Users, Copy, CheckCircle } from "lucide-react"
 
 interface TokenDetailModalProps {
   token: TokenData | null
@@ -28,6 +28,18 @@ export const TokenDetailModal = ({
   onClose 
 }: TokenDetailModalProps) => {
   const [activeTab, setActiveTab] = useState<"trade" | "details">("trade")
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null)
+
+  const copyToClipboard = async (address: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopiedAddress(address)
+      setTimeout(() => setCopiedAddress(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy address:', err)
+    }
+  }
   
   // Simple chart using iframe - no complex data fetching needed
 
@@ -185,13 +197,43 @@ export const TokenDetailModal = ({
                       Token Information
                     </h3>
                     <div className="space-y-3 text-sm">
-                      <div className="flex justify-between p-3 bg-primary/5 rounded-lg">
+                      <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
                         <span className="text-muted-foreground">Contract:</span>
-                        <span className="text-foreground font-mono">{token.mint.slice(0, 8)}...{token.mint.slice(-8)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-mono">{token.mint.slice(0, 8)}...{token.mint.slice(-8)}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-secondary/50"
+                            onClick={(e) => copyToClipboard(token.mint, e)}
+                            title="Copy contract address"
+                          >
+                            {copiedAddress === token.mint ? (
+                              <CheckCircle className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex justify-between p-3 bg-primary/5 rounded-lg">
+                      <div className="flex justify-between items-center p-3 bg-primary/5 rounded-lg">
                         <span className="text-muted-foreground">Creator:</span>
-                        <span className="text-foreground font-mono">{token.creator.slice(0, 8)}...{token.creator.slice(-8)}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-foreground font-mono">{token.creator.slice(0, 8)}...{token.creator.slice(-8)}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 hover:bg-secondary/50"
+                            onClick={(e) => copyToClipboard(token.creator, e)}
+                            title="Copy creator address"
+                          >
+                            {copiedAddress === token.creator ? (
+                              <CheckCircle className="w-3 h-3 text-green-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
                       </div>
                       <div className="flex justify-between p-3 bg-primary/5 rounded-lg">
                         <span className="text-muted-foreground">Category:</span>

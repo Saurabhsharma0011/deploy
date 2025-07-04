@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, ExternalLink, Calendar, User, Database } from 'lucide-react';
+import { Search, ExternalLink, Calendar, User, Database, Copy, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface TokenListProps {
@@ -16,6 +16,7 @@ interface TokenListProps {
 export const TokenList = ({ onTokenSelect }: TokenListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const { tokens, loading, error, refetch } = useTokens(currentPage, 20);
   const { tokens: searchResults, loading: searchLoading, searchTokens } = useSearchTokens();
 
@@ -40,6 +41,17 @@ export const TokenList = ({ onTokenSelect }: TokenListProps) => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const copyToClipboard = async (address: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopiedAddress(address);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
   };
 
   if (error) {
@@ -168,9 +180,24 @@ export const TokenList = ({ onTokenSelect }: TokenListProps) => {
                     <span className="text-muted-foreground">Supply:</span>
                     <span className="font-medium">{token.initial_supply.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Mint:</span>
-                    <span className="font-mono">{formatAddress(token.mint_address)}</span>
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground">Contract:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono">{formatAddress(token.mint_address)}</span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-4 w-4 p-0 hover:bg-secondary/50"
+                        onClick={(e) => copyToClipboard(token.mint_address, e)}
+                        title="Copy contract address"
+                      >
+                        {copiedAddress === token.mint_address ? (
+                          <CheckCircle className="w-3 h-3 text-green-500" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
 

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Wallet, Plus, Info, Clock, RefreshCw, BarChart3, Twitter, MessageCircle } from "lucide-react"
+import { Wallet, Plus, Info, Clock, RefreshCw, BarChart3, Twitter, MessageCircle, Copy, CheckCircle } from "lucide-react"
 import { useTokenData } from "./hooks/useTokenData"
 import { type TokenData } from "./hooks/useWebSocket"
 import { ConnectionStatus } from "./components/ConnectionStatus"
@@ -31,6 +31,18 @@ const TokenCard = ({
   onOpenDetail: (token: TokenData) => void
 }) => {
   const { isPaid: isDexPaid } = useDexPaidStatus(token.mint, token.market_cap_value)
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null)
+
+  const copyToClipboard = async (address: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await navigator.clipboard.writeText(address)
+      setCopiedAddress(address)
+      setTimeout(() => setCopiedAddress(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy address:', err)
+    }
+  }
 
   const timeAgo = () => {
     // Use a stable timestamp to avoid hydration mismatch
@@ -165,7 +177,43 @@ const TokenCard = ({
         {/* Creator Info */}
         <div className="space-y-1">
           <p className="text-sm text-muted-foreground">Creator:</p>
-          <p className="text-sm font-mono text-foreground">{truncateAddress(token.creator)}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-mono text-foreground">{truncateAddress(token.creator)}</p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 hover:bg-secondary/50"
+              onClick={(e) => copyToClipboard(token.creator, e)}
+              title="Copy creator address"
+            >
+              {copiedAddress === token.creator ? (
+                <CheckCircle className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Contract Address */}
+        <div className="space-y-1">
+          <p className="text-sm text-muted-foreground">Contract:</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-mono text-foreground">{truncateAddress(token.mint)}</p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 w-6 p-0 hover:bg-secondary/50"
+              onClick={(e) => copyToClipboard(token.mint, e)}
+              title="Copy contract address"
+            >
+              {copiedAddress === token.mint ? (
+                <CheckCircle className="w-3 h-3 text-green-500" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Social Links */}
@@ -312,7 +360,7 @@ export default function TokenPlatform() {
       <nav className="border-b border-primary/30 px-6 py-4 bg-black/50 backdrop-blur-sm">
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-8">
-            <h1 className="text-xl font-bold">TokenPlatform</h1>
+            <h1 className="text-xl font-bold">Reeveal</h1>
             <div className="flex gap-4">
               <a href="/" className="text-foreground hover:text-primary transition-all duration-200 hover:scale-105 px-3 py-2 rounded-lg hover:bg-secondary/20">Home</a>
               <a href="/trade" className="text-foreground hover:text-primary transition-all duration-200 hover:scale-105 px-3 py-2 rounded-lg hover:bg-secondary/20">Trade</a>
@@ -327,17 +375,19 @@ export default function TokenPlatform() {
               href="https://x.com/reevealdotfun" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
+              className="flex flex-col items-center gap-1 text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
             >
               <Twitter className="w-5 h-5" />
+              <span className="text-xs font-medium">Twitter</span>
             </a>
             <a 
               href="https://t.me/reevealdotfun" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
+              className="flex flex-col items-center gap-1 text-foreground hover:text-primary transition-all duration-200 hover:scale-110 p-2 rounded-lg hover:bg-secondary/20"
             >
               <MessageCircle className="w-5 h-5" />
+              <span className="text-xs font-medium">Telegram</span>
             </a>
             
             <Button

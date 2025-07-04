@@ -30,7 +30,8 @@ export const ConnectionStatus = ({ isConnected, error, rawMessages }: Connection
           <Button
             variant="outline"
             size="sm"
-            className="bg-transparent border-slate-600 text-slate-400 hover:bg-slate-800"
+            disabled={true}
+            className="bg-transparent border-slate-600 text-slate-400 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <Code className="w-3 h-3 mr-1" />
             Raw Data
