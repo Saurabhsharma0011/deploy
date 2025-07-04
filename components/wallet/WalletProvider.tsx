@@ -18,8 +18,21 @@ export const SolanaWalletProvider: FC<SolanaWalletProviderProps> = ({ children }
   // The network can be set to 'devnet', 'testnet', or 'mainnet-beta'
   const network = WalletAdapterNetwork.Mainnet;
 
-  // You can also provide a custom RPC endpoint
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // RPC endpoint configuration
+  const endpoint = useMemo(() => {
+    // Check for custom RPC endpoint in environment variables
+    const customEndpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_ENDPOINT;
+    
+    if (customEndpoint) {
+      console.log('Using custom RPC endpoint:', customEndpoint);
+      return customEndpoint;
+    }
+    
+    // Fallback to default Solana RPC
+    const defaultEndpoint = clusterApiUrl(network);
+    console.log('Using default Solana RPC:', defaultEndpoint);
+    return defaultEndpoint;
+  }, [network]);
 
   // @solana/wallet-adapter-wallets includes all the adapters but supports tree shaking
   // Only include the wallets you want to support

@@ -14,6 +14,7 @@ import { PriceDisplay } from "./components/PriceDisplay"
 import { TokenTrade } from "./components/TokenTrade"
 import { TokenDetailModal } from "./components/TokenDetailModal"
 import { BondingCurveDebug } from "./components/BondingCurveDebug"
+import { TokenCreateModal } from "./components/TokenCreateModal"
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Progress } from "@/components/ui/progress"
 import { useDexPaidStatus } from "./hooks/useDexPaidStatus"
@@ -242,6 +243,7 @@ export default function TokenPlatform() {
   const [activeTab, setActiveTab] = useState<"new" | "trending" | "graduated">("new")
   const [selectedToken, setSelectedToken] = useState<TokenData | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const {
     allTokens,
@@ -330,6 +332,7 @@ export default function TokenPlatform() {
             <div className="flex gap-4">
               <a href="/" className="text-foreground hover:text-primary transition-all duration-200 hover:scale-105 px-3 py-2 rounded-lg hover:bg-secondary/20">Home</a>
               <a href="/trade" className="text-foreground hover:text-primary transition-all duration-200 hover:scale-105 px-3 py-2 rounded-lg hover:bg-secondary/20">Trade</a>
+              <a href="/create" className="text-foreground hover:text-primary transition-all duration-200 hover:scale-105 px-3 py-2 rounded-lg hover:bg-secondary/20">Create</a>
             </div>
             <ConnectionStatus isConnected={isConnected} error={error} rawMessages={rawMessages} />
           </div>
@@ -355,7 +358,10 @@ export default function TokenPlatform() {
                 {trendingTokens.length} trending tokens
               </Badge>
             )}
-            <Button className="bg-primary hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/50 rounded-xl transform transition-all duration-200 hover:scale-105 active:scale-95">
+            <Button 
+              onClick={() => setIsCreateModalOpen(true)}
+              className="bg-primary hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/50 rounded-xl transform transition-all duration-200 hover:scale-105 active:scale-95"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Create Token
             </Button>
@@ -540,6 +546,12 @@ export default function TokenPlatform() {
         isLoadingPrice={isPriceLoading}
         isOpen={isDetailModalOpen}
         onClose={handleCloseDetail}
+      />
+      
+      {/* Token Create Modal */}
+      <TokenCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
     </div>
   )
