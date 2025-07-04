@@ -1,9 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Only create client if both URL and key are properly configured
+const isConfigured = supabaseUrl !== 'https://placeholder.supabase.co' && 
+                    supabaseAnonKey !== 'placeholder-key' &&
+                    !supabaseUrl.includes('your_supabase') &&
+                    !supabaseAnonKey.includes('your_supabase')
+
+export const supabase = isConfigured ? createClient(supabaseUrl, supabaseAnonKey) : null
 
 // TypeScript interface for our token data
 export interface Token {
