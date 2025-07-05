@@ -1,255 +1,203 @@
-﻿# Token Platform
+# Token Platform
 
-A Next.js application for displaying and trading tokens on the Solana blockchain with real-time OHLC candlestick charts.
+A powerful Next.js-based platform for displaying, analyzing, and trading tokens on the Solana blockchain, now with **real-time OHLC candlestick charting** powered by the MEVX API.
 
-## Features
+---
 
-- Real-time token updates via WebSocket connection
-- Solana wallet integration (Phantom, Solflare, Backpack)
-- Buy/sell tokens directly from the interface
-- View token details, prices, and market data
-- **NEW**: OHLC Candlestick Charts with MEVX API integration
-- **NEW**: Detailed token modal with chart, overview, and trading tabs
-- Create new tokens
+## 🚀 Features
 
-## New Chart Functionality - Complete Flow
+* 🔁 Real-time token updates via Pump.fun WebSocket
+* 🔐 Solana wallet integration (Phantom, Solflare, Backpack)
+* 🪙 Buy/sell tokens with a seamless interface
+* 📊 View token details, market data, and interactive charts
+* 📈 **NEW**: OHLC Candlestick Charts using MEVX API
+* 🧠 **NEW**: Intelligent bonding curve detection via gRPC + fallback PDA derivation
+* 🪄 Token creation support
 
-### Step-by-Step Implementation
+---
 
-**Step 1: Listen to WebSocket messages from pump.fun**
-- ✅ Enhanced WebSocket listener in `useWebSocket.ts`
-- ✅ Captures all raw message structures with detailed logging
-- ✅ Identifies token creation events from multiple message formats
+## 📉 OHLC Charting Workflow (End-to-End)
 
-**Step 2: Extract bondingCurveKey from each token creation event**
-- ✅ Advanced extraction logic in `extractOrDeriveBondingCurve()`
-- ✅ Tries multiple field patterns from pump.fun messages
-- ✅ Falls back to deterministic PDA derivation using mint address
-- ✅ Validates extracted addresses using Solana PublicKey validation
+### ✅ Step-by-Step Flow
 
-**Step 3: Use bondingCurveKey as the pool address**
-- ✅ Automatically stores bonding curve keys in token data
-- ✅ Displays bonding curve addresses in token cards for verification
-- ✅ Shows green indicator dot when chart data is available
+1. **WebSocket Listener**
 
-**Step 4: Call MEVX API with this pool address to fetch OHLC data**
-- ✅ Automatic API calls to `/api/candlesticks` with real bonding curve addresses
-- ✅ Real-time OHLC data fetching using extracted bonding curve keys
-- ✅ Fallback error handling when bonding curve data is unavailable
+   * Enhanced listener (`useWebSocket.ts`) captures detailed Pump.fun messages
+   * Identifies token creation events and logs raw messages
 
-**Step 5: Use the OHLC data to render a trading chart for that token**
-- ✅ Interactive candlestick charts using lightweight-charts library
-- ✅ Real-time price statistics (24h high/low, volume, price changes)
-- ✅ Responsive chart design matching platform theme
-- ✅ Auto-refresh functionality with rate limiting
+2. **Bonding Curve Extraction**
 
-### Technical Implementation Details
+   * Smart extraction via `extractOrDeriveBondingCurve()`
+   * Handles diverse message formats
+   * Falls back to deterministic PDA derivation
+   * Validates results via Solana PublicKey
 
-#### Bonding Curve Extraction (`lib/bondingCurve.ts`)
-```typescript
-// Deterministic PDA derivation for pump.fun bonding curves
+3. **Store and Use Curve Address**
+
+   * Curve is saved into the token object
+   * Shows green indicator when chart data is available
+
+4. **Fetch OHLC Data via MEVX API**
+
+   * Uses bondingCurveKey as `poolAddress`
+   * Auto API calls to `/api/candlesticks` with fallback handling
+
+5. **Render Chart**
+
+   * Uses `lightweight-charts` for beautiful, interactive visuals
+   * Displays 24h stats, price changes, volume
+
+---
+
+## ⚙️ Technical Details
+
+### 🔗 Bonding Curve Derivation
+
+```ts
 const [bondingCurveAddress] = PublicKey.findProgramAddressSync(
   [Buffer.from("bonding-curve"), mintPublicKey.toBuffer()],
   programPublicKey
-)
+);
 ```
 
-#### Enhanced WebSocket Processing
-- **Raw message analysis** with detailed field logging
-- **Multiple extraction patterns** for different pump.fun message formats
-- **Automatic bonding curve derivation** when not explicitly provided
-- **Real-time validation** of extracted addresses
+### 🧠 WebSocket Intelligence
 
-#### Chart Data Pipeline
-1. **Token created** → WebSocket receives event
-2. **Bonding curve extracted** → From message or derived from mint
-3. **Chart data fetched** → MEVX API called with bonding curve address
-4. **Chart rendered** → Interactive candlestick display with statistics
+* Raw message inspection
+* Multiple bonding curve formats
+* Auto PDA fallback
+* Real-time token updates
 
-### OHLC Candlestick Charts
-- **Real-time OHLC data** from MEVX API using actual bonding curve addresses
-- **Interactive candlestick charts** using lightweight-charts library
-- **Price statistics** including 24h high/low, volume, and price changes
-- **Automatic data fetching** when token details are opened with valid bonding curves
+### 📡 Chart Data Pipeline
 
-### Chart Features
-- **Green indicator dots** on "View Details" buttons when chart data is available
-- **Bonding curve address display** in token cards for verification
-- **Error handling** for missing bonding curve data
-- **Auto-refresh** functionality with rate limiting
-- **Responsive design** matching the dark theme
+1. Token created ➝ WebSocket triggered
+2. Curve extracted/derived ➝ saved in token object
+3. API called ➝ `/api/candlesticks?poolAddress=...`
+4. Chart rendered with auto-refresh
 
-### MEVX API Integration
-- **Endpoint**: `GET /api/candlesticks`
-- **Real Parameters**: 
-  - `poolAddress`: Extracted or derived bonding curve address
-  - `timeBucket`: Time interval (default: "1s")
-  - `limit`: Number of candles (default: "10000")
-- **Real Response**: Live OHLC candlestick data with volume from pump.fun bonding curves
+### 📈 Chart Rendering
 
-### How It Works
-1. **Click "View Details"** on any token card
-2. **Navigate to "Chart" tab** in the token detail modal
-3. **OHLC data is automatically fetched** from MEVX API
-4. **Interactive candlestick chart** is rendered with price statistics
-5. **Refresh functionality** to update chart data
+* Library: `lightweight-charts`
+* Data: MEVX API candlestick feed
+* UI: Dark, responsive, with stats and indicators
 
-## Getting Started
+---
 
-1. Clone the repository
-2. Install dependencies:
+## 🧪 New Chart Features
 
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
+* 🟢 Green dot indicator for chart-ready tokens
+* 🧾 Bonding curve address visible for verification
+* ⚠️ Graceful error handling if chart unavailable
+* 🔁 Auto-refresh with rate limiting
+
+---
+
+## 🔌 API Details
+
+### MEVX API
+
+```
+GET /api/candlesticks
+?poolAddress=<address>&timeBucket=1s&limit=10000
 ```
 
-3. Run the development server:
+* Returns: OHLC + volume data
+
+### Other APIs
+
+* `/api/trade` → Trading proxy to PumpPortal
+* `/api/proxy/mevx` → Candlestick chart API
+* `/api/proxy/dexscreener` → Price screening
+
+---
+
+## 🛠️ Components
+
+* `CandlestickChart` → Renders OHLC
+* `TokenDetailModal` → Full token info
+* `useCandlestickData` → Handles chart data fetching
+
+---
+
+## 📦 Dependencies
+
+### New
+
+* `lightweight-charts` (v5.0.8)
+
+### Existing
+
+* `next`, `react`
+* `@solana/web3.js`
+* `@solana/wallet-adapter-*`
+* `shadcn/ui`
+* `tailwindcss`
+
+---
+
+## 🔐 Environment Setup
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=******************
+NEXT_PUBLIC_SUPABASE_ANON_KEY=******************
+```
+
+---
+
+## 🧪 Demo Usage Flow
+
+1. Run dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-## Usage
+2. Connect wallet
+3. Browse tokens by market cap tiers
+4. Click "View Details" ➝ Explore tabs:
 
-### Connect Your Wallet
+   * **Overview**
+   * **Chart**
+   * **Trade**
+5. For chart-enabled tokens (green dot): explore candlestick chart with live price & stats
+6. Trade instantly using buy/sell interface
 
-Click the "Connect Wallet" button in the top navigation to connect your Solana wallet (Phantom, Solflare, or Backpack).
+---
 
-### Viewing Tokens
+## ⚠️ Notes
 
-The home page displays tokens in three categories:
-- New Tokens (<$10K market cap)
-- Bonding Tokens ($10K - $50K market cap)
-- Graduated Tokens (>$50K market cap)
+* Bonding curves are now extracted via **gRPC GitHub repo integration**
+* Fallback to deterministic PDA remains active
+* GitHub link for gRPC extractor coming soon
 
-### Viewing Token Charts
+---
 
-1. Click **"View Details"** on any token card
-2. A detailed modal will open with three tabs:
-   - **Overview**: Token information, price data, and social links
-   - **Chart**: Interactive OHLC candlestick chart with real-time data
-   - **Trade**: Buy/sell interface for the token
-
-### Trading Tokens
-
-Click **"Trade [Symbol]"** on any token card or use the Trade tab in the detail modal to:
-- Buy tokens with SOL
-- Sell tokens for SOL
-- Set custom amounts or use preset buttons
-- Monitor transaction status
-
-## Technical Details
-
-### Chart Implementation
-- **Library**: lightweight-charts v5.0.8
-- **Data Source**: MEVX API (https://api.mevx.io/api/v1/candlesticks)
-- **Chart Type**: Candlestick with volume data
-- **Styling**: Dark theme matching the platform design
-
-### API Endpoints
-- `/api/candlesticks` - Fetches OHLC data from MEVX API
-- `/api/trade` - Proxy to pumpportal.fun trading API
-- `/api/proxy/mevx` - Price data from MevX API
-- `/api/proxy/dexscreener` - DEX screening data
-
-### Components
-- `CandlestickChart` - Interactive chart component
-- `TokenDetailModal` - Detailed token view with tabs
-- `useCandlestickData` - Hook for fetching OHLC data
-
-## Environment Variables
-
-No additional environment variables are required for the chart functionality.
-
-## Dependencies
-
-### New Dependencies Added
-- `lightweight-charts` - For rendering candlestick charts
-
-### Existing Dependencies
-- `@solana/web3.js` - Solana blockchain interaction
-- `@solana/wallet-adapter-*` - Wallet connectivity
-- `next` - React framework
-- `tailwindcss` - Styling
-- Various UI components from Radix UI
-
-## Demo Note
-
-The current implementation uses a sample pool address for demonstration purposes. In a production environment, you would need to:
-
-1. **Obtain the actual bonding curve pool address** for each token
-2. **Store pool addresses** in your database or token metadata
-3. **Pass the correct pool address** to the MEVX API
-
-## Build and Deploy
+## 📦 Build & Deploy
 
 ```bash
-# Build the project
 npm run build
-
-# Start production server
 npm start
 ```
 
-The application builds successfully and is ready for deployment.
+---
 
-## API Rate Limits
+## 🧠 Summary
 
-The MEVX API may have rate limits. The implementation includes:
-- **Batch processing** of requests
-- **Delay between requests** to respect rate limits
-- **Error handling** for failed requests
-- **Retry functionality** for users
+This Token Platform provides a modern, responsive, and real-time interface for exploring and trading tokens on Solana — complete with intelligent bonding curve detection, WebSocket-powered updates, and beautiful candlestick charts using MEVX API.
 
-To trade a token:
-1. Click the "Trade" button on any token card
-2. A dialog will open with buy/sell options
-3. Enter the amount you want to trade
-4. Click "Buy" or "Sell" to execute the trade
+You now have:
 
-Alternatively, you can go to the "/trade" page to trade any token by entering its Contract Address (CA).
+* Chart-enabled token UI
+* Live market stats
+* Smooth trading UX
+* Full Web3 wallet support
+* Chart data refresh with limit handling
 
-### Creating Tokens
+### Next Step
 
-To create a new token, click the "Create Coin" button and follow the instructions.
+Integrate with token metadata storage in Supabase for richer user experiences.
 
-## Architecture
+---
 
-- Next.js frontend with React components
-- Solana wallet adapter for wallet connections
-- Real-time updates via WebSocket
-- API routes for trade execution
-
-## Dependencies
-
-- Next.js
-- React
-- @solana/wallet-adapter-react
-- @solana/web3.js
-- shadcn/ui components
-- Tailwind CSS
-
-## updated the database with supabase
-just just need to create .env.local 
-paste you supabse_project_url = **************************
-you supabase anon link = **************************
-
-## updated the bounding curve of each newly created token through gprc which i got through a github repo
-## will update the github link also later
-#   r e v e e e l a i  
- #   r e v e e e l a i  
- #   c h e c k  
- #   u i - u p d a t e d  
- #   u i - u p d a t e d  
- #   d e p l o y  
- #   d e p l o y  
- #   d e p l o y  
- 
+*Stay tuned for future enhancements, including price alerts, historical analytics, and portfolio tracking.*
