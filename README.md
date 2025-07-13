@@ -2,7 +2,6 @@
 
 A powerful Next.js-based platform for displaying, analyzing, and trading tokens on the Solana blockchain, now with **real-time OHLC candlestick charting** powered by the MEVX API.
 
--
 
 ## 🚀 Features
 
